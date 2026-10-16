@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제주시 보도자료 프롬프트 빌더</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Malgun Gothic","맑은 고딕",sans-serif;background:#eef1f5;color:#1f2733;line-height:1.6}
+header{background:#143a66;color:#fff;padding:18px 24px}
+header h1{font-size:19px;font-weight:700}
+header p{font-size:12.5px;opacity:.8;margin-top:3px}
+.wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px;max-width:1500px;margin:0 auto}
+@media(max-width:1000px){.wrap{grid-template-columns:1fr}}
+.panel{background:#fff;border:1px solid #d6dce5;border-radius:8px;overflow:hidden}
+.panel>h2{background:#f4f6f9;border-bottom:1px solid #d6dce5;padding:10px 14px;font-size:14px;color:#143a66}
+.body{padding:14px;max-height:78vh;overflow-y:auto}
+fieldset{border:1px solid #e1e6ed;border-radius:6px;padding:10px 12px 12px;margin-bottom:12px}
+fieldset.hl{border-color:#b9cce4;background:#f7fafd}
+legend{font-size:12.5px;font-weight:700;color:#2c5f9e;padding:0 5px}
+label{display:block;font-size:12px;color:#5a6572;margin:8px 0 3px}
+label .opt{color:#9aa5b4;font-weight:400}
+input,textarea,select{width:100%;border:1px solid #cfd6e0;border-radius:4px;padding:6px 8px;font-size:13px;font-family:inherit;background:#fff}
+input:focus,textarea:focus,select:focus{outline:2px solid #9cc0ea;border-color:#2c5f9e}
+textarea{resize:vertical;min-height:58px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.chk{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}
+.chk label{display:flex;align-items:center;gap:4px;margin:0;font-size:12.5px;color:#1f2733}
+.chk input{width:auto}
+details{border:1px solid #e1e6ed;border-radius:6px;margin-bottom:7px;background:#fbfcfe}
+summary{cursor:pointer;padding:7px 11px;font-size:12.5px;font-weight:600;color:#143a66;user-select:none}
+summary:hover{background:#f0f4f9}
+.chips{display:flex;flex-wrap:wrap;gap:5px;padding:4px 11px 11px}
+.chip{border:1px solid #cfd6e0;background:#fff;border-radius:12px;padding:3px 9px;font-size:11.5px;cursor:pointer;color:#35404f}
+.chip:hover{background:#2c5f9e;color:#fff;border-color:#2c5f9e}
+.chip.on{background:#143a66;color:#fff;border-color:#143a66}
+#out{white-space:pre-wrap;font-family:"D2Coding",Consolas,monospace;font-size:12px;background:#1e2733;color:#e4ebf2;padding:14px;border-radius:6px;min-height:400px;max-height:72vh;overflow:auto}
+.bar{display:flex;gap:7px;padding:10px 14px;border-top:1px solid #d6dce5;background:#f9fafc;flex-wrap:wrap}
+button{border:0;border-radius:5px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.b1{background:#143a66;color:#fff}.b2{background:#2c5f9e;color:#fff}.b3{background:#e4e9f0;color:#35404f}
+button:hover{opacity:.88}
+.note{font-size:11.5px;color:#7a8696;margin-top:5px}
+.cnt{font-size:11.5px;color:#7a8696;padding:0 14px 8px}
+.skip{font-size:11.5px;color:#a8701f;background:#fdf6e7;border:1px solid #f0dfb8;border-radius:5px;padding:7px 10px;margin:0 14px 10px}
+.tip{font-size:11.5px;color:#2c5f9e;background:#eef4fb;border:1px solid #c9dcf0;border-radius:5px;padding:7px 9px;margin-top:8px}
+.tabs{display:flex;gap:4px;padding:10px 14px 0}
+.tab{padding:5px 12px;font-size:12.5px;border:1px solid #d6dce5;border-bottom:0;border-radius:5px 5px 0 0;background:#f0f3f7;cursor:pointer}
+.tab.on{background:#fff;font-weight:700;color:#143a66}
+</style>
+</head>
+<body>
+<header>
+  <h1>제주시 행사·프로그램 보도자료 프롬프트 빌더</h1>
+  <p>미입력 항목 자동 생략 · 인용문 어조 설계 · 표현 사전 연동</p>
+</header>
+
+<div class="wrap">
+  <section class="panel">
+    <h2>① 행사 정보 입력 <span style="font-weight:400;font-size:11.5px;color:#7a8696">— 비워 두면 해당 줄은 출력되지 않습니다</span></h2>
+    <div class="body">
+      <fieldset><legend>헤더 정보</legend>
+        <div class="row">
+          <div><label>담당기관 / 부서</label><input id="org" placeholder="탐라도서관 열람팀"></div>
+          <div><label>자료제공일</label><input id="date" placeholder="2026. 10. 16.(금)"></div>
+        </div>
+        <div class="row3">
+          <div><label>과장 직책</label><input id="bossT" placeholder="탐라도서관장"></div>
+          <div><label>성명</label><input id="bossN" placeholder="문정희"></div>
+          <div><label>연락처</label><input id="bossP" placeholder="728-8360"></div>
+        </div>
+        <div class="row3">
+          <div><label>팀장 직책 <span class="opt">(선택)</span></label><input id="mgrT" placeholder="열람팀장"></div>
+          <div><label>성명</label><input id="mgrN" placeholder="오경훈"></div>
+          <div><label>연락처</label><input id="mgrP" placeholder="728-8371"></div>
+        </div>
+        <div class="chk">
+          <label><input type="checkbox" id="vid">동영상 있음</label>
+          <label><input type="checkbox" id="pho" checked>사진(웹하드) 있음</label>
+          <label><input type="checkbox" id="fol">후속자료 있음</label>
+        </div>
+      </fieldset>
+
+      <fieldset><legend>행사 개요</legend>
+        <label>유형</label>
+        <select id="type" onchange="hintQuote()">
+          <option value="사전안내형">사전안내형 (모집·예고)</option>
+          <option value="사후결과형">사후결과형 (종료 후 보도)</option>
+          <option value="성과종합형">성과종합형 (기간 실적 종합)</option>
+        </select>
+        <label>행사(프로그램)명</label><input id="pname" placeholder="같이 놀자~ 지구촌 친구들!">
+        <label>부제 키워드 <span class="opt">(선택)</span></label><input id="kw" placeholder="세계 전통놀이 체험">
+        <div class="row">
+          <div><label>일시 · 기간</label><input id="when" placeholder="2026. 11. 7.(토)~29.(일)"></div>
+          <div><label>장소 <span class="opt">(선택)</span></label><input id="where" placeholder="탐라도서관 강의실 1"></div>
+        </div>
+        <div class="row">
+          <div><label>대상 <span class="opt">(선택)</span></label><input id="who" placeholder="다문화 및 지역 아동"></div>
+          <div><label>정원 <span class="opt">(선택)</span></label><input id="cap" placeholder="학년별 20명(총 40명)"></div>
+        </div>
+        <label>주요 프로그램 <span class="opt">(선택 · 줄바꿈 구분)</span></label>
+        <textarea id="items" placeholder="술래잡기&#10;눈 가리고 잡기&#10;땅따먹기 놀이"></textarea>
+        <label>추진 배경 · 목적 <span class="opt">(선택)</span></label><textarea id="goal" placeholder="세계 각국 전통놀이로 다양한 문화 이해"></textarea>
+        <div class="row">
+          <div><label>연계 · 협업기관 <span class="opt">(선택)</span></label><input id="coop" placeholder="문화체육관광부"></div>
+          <div><label>성과수치 <span class="opt">(선택)</span></label><input id="num" placeholder="1,300여 명 참여 / 총 9회"></div>
+        </div>
+        <label>신청방법 · 접수처 <span class="opt">(선택)</span></label><input id="apply" placeholder="10월 17일 10시부터 lib.jeju.go.kr 선착순">
+        <label>향후 계획 <span class="opt">(선택)</span></label><input id="plan" placeholder="문화다양성 기반 아동 프로그램 지속 운영">
+        <label>붙임 <span class="opt">(선택)</span></label><input id="att" placeholder="프로그램 포스터 1부">
+      </fieldset>
+
+      <!-- ===== 인용문 설계 ===== -->
+      <fieldset class="hl"><legend>마무리 인용문 설계</legend>
+        <label>발언자</label>
+        <select id="spk">
+          <option value="boss">과장·기관장 (기본)</option>
+          <option value="mgr">팀장</option>
+          <option value="mayor">제주시장</option>
+          <option value="custom">직접 입력</option>
+        </select>
+        <input id="spkC" placeholder="예) 김○○ 운영위원장" style="margin-top:6px;display:none">
+
+        <label>인용 구성 <span class="opt">(본문 흐름에 맞는 어조 선택)</span></label>
+        <select id="qmode" onchange="hintQuote()">
+          <option value="auto" selected>자동 추천 (유형·입력 항목 기반)</option>
+          <option value="A">A. 의의 + 향후계획 — 표준형</option>
+          <option value="B">B. 의의 + 참여 당부·요청 — 모집·캠페인</option>
+          <option value="C">C. 성과 평가 + 감사 — 종료 후 보도</option>
+          <option value="D">D. 기대·바람 — 아동·교육 프로그램</option>
+          <option value="E">E. 성과 + 확대 의지 — 실적 종합</option>
+          <option value="F">F. 배경 설명 + 정책 의지 — 신규 시책</option>
+          <option value="G">G. 의의 + 협업 강조 + 지속 추진 — 3단</option>
+          <option value="H">H. 안전·유의사항 당부 — 대규모 행사</option>
+        </select>
+
+        <div class="row" style="margin-top:8px">
+          <div><label>인용 문장 수</label>
+            <select id="qlen"><option>1문장</option><option selected>2문장 (~라며, ~라고)</option><option>3문장 (~라며, ~면서, ~라고)</option></select></div>
+          <div><label>당부 대상 <span class="opt">(B·H 선택 시)</span></label>
+            <select id="qto"><option value="">해당 없음</option><option>시민·도민</option><option>참여 희망자</option><option>학부모</option><option>지역주민</option><option>관광객</option><option>유관기관</option><option>관계자 전반</option></select></div>
+        </div>
+
+        <label>인용에 꼭 담을 메시지 <span class="opt">(선택 · 자유 입력)</span></label>
+        <textarea id="qmsg" placeholder="예) 조기 마감이 예상되니 서둘러 신청해 달라 / 내년에는 읍면지역으로 확대하겠다"></textarea>
+
+        <div class="chk">
+          <label><input type="checkbox" id="qNoNum" checked>인용문에 수치 중복 기재 금지</label>
+          <label><input type="checkbox" id="qPol">정책 기조 언급 포함</label>
+        </div>
+        <div class="tip" id="qhint"></div>
+      </fieldset>
+
+      <fieldset><legend>출력 옵션</legend>
+        <label>미입력 항목 처리 방식</label>
+        <select id="missing">
+          <option value="omit">해당 줄·문단을 아예 생략 (권장)</option>
+          <option value="mark">본문에 {확인 필요}로 표기</option>
+        </select>
+        <div class="row" style="margin-top:8px">
+          <div><label>본문 ❍ 개수</label>
+            <select id="bodyn">
+              <option value="auto" selected>자동 (입력 항목 수에 맞춤)</option>
+              <option>3</option><option>4</option><option>5</option>
+            </select></div>
+          <div><label>분량</label>
+            <select id="len"><option>900~1,100자 (A4 1매)</option><option>1,100~1,400자</option><option>700~900자 (단신)</option></select></div>
+        </div>
+        <div class="chk">
+          <label><input type="checkbox" id="opSelf" checked>SELF-CHECK 포함</label>
+          <label><input type="checkbox" id="opWord" checked>선택 표현 사전 포함</label>
+          <label><input type="checkbox" id="opHead" checked>헤더표 포함</label>
+        </div>
+      </fieldset>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="tabs">
+      <div class="tab on" data-t="w">② 표현 사전</div>
+      <div class="tab" data-t="o">③ 생성된 프롬프트</div>
+    </div>
+
+    <div class="body" id="tabW">
+      <p class="note" style="margin-bottom:8px">클릭하면 선택/해제됩니다. 선택이 없으면 <b>[표현 사전]</b> 블록은 출력되지 않습니다. <b>14~19번</b>이 인용문 전용 블록입니다.</p>
+      <div id="bank"></div>
+      <div class="bar" style="border:0;background:none;padding:10px 0 0">
+        <button class="b3" onclick="clearSel()">선택 초기화</button>
+        <button class="b3" onclick="autoQuoteWords()">인용 어조에 맞는 표현 자동 선택</button>
+        <span class="note" id="selCnt" style="align-self:center">선택 0개</span>
+      </div>
+    </div>
+
+    <div class="body" id="tabO" style="display:none">
+      <div id="out"></div>
+    </div>
+
+    <div class="skip" id="skipBox" style="display:none"></div>
+    <div class="cnt" id="cnt"></div>
+    <div class="bar">
+      <button class="b1" onclick="gen()">프롬프트 생성</button>
+      <button class="b2" onclick="copyP()">복사</button>
+      <button class="b2" onclick="dl('md')">.md 저장</button>
+      <button class="b2" onclick="dl('txt')">.txt 저장</button>
+      <button class="b3" onclick="sample()">샘플 채우기</button>
+      <button class="b3" onclick="reset()">전체 초기화</button>
+    </div>
+  </section>
+</div>
+
+<script>
+const BANK={
+"주제목 — 종결 동사·명사":"운영,추진,개최,실시,진행,시행,가동,착수,돌입,확대,강화,본격화,활발,호응,성료,마무리,개강,개막,모집,선보여",
+"주제목 — 수식 키워드":"맞춤형,체험형,참여형,생활밀착형,찾아가는,함께하는,더불어,지역 연계,세대 공감,청소년 주도,주민 주도,민관 협력,원스톱,통합,상설,계절형,야간,주말,이동식,온·오프라인,무료,선착순",
+"부제목 — 콘텐츠 나열어":"체험,공연,전시,강좌,캠프,워크숍,토크콘서트,경연대회,플리마켓,팝업스토어,도보투어,포토존,부스 운영,시연,실습,견학,봉사활동,캠페인,공모전,발표회,수료식,간담회,설명회,상담 부스",
+"부제목 — 기대효과":"지역상권 활력 제고,지역경제 활성화,문화향유 기회 확대,공동체 의식 함양,정주여건 개선,관광 만족도 향상,세대 간 소통 강화,환경보전 의식 확산,참여 기회 보장,돌봄 공백 해소,진로 탐색 지원,디지털 격차 해소,안전의식 제고,문화다양성 이해 증진,지역 인재 육성,주민 체감도 향상,자립 역량 강화,생활 불편 해소,상호 존중 문화 조성,지속가능한 성장 기반 마련,민관 협력체계 구축,브랜드 가치 제고",
+"리드문 — 목적 연결":"~을 알리기 위해,~에 활력을 불어넣기 위해,~을 지원하기 위해,~을 확산하기 위해,~을 돕기 위해,~을 제고하기 위해,~의 기회를 제공하기 위해,~을 발굴하기 위해,~을 육성하기 위해,~을 해소하기 위해,~을 기념해,~을 맞아,~을 대상으로,~와 연계해,~의 일환으로,~에 발맞춰,~에 부응해,~을 계기로,~을 목표로,~을 중심으로",
+"리드문 — 종결 서술어":"운영한다,추진한다,개최한다,실시한다,모집한다,접수한다,선보인다,마련한다,운영할 계획이다,추진하기로 했다,운영했다,개최했다,진행됐다,마련됐다,열렸다,펼쳐졌다,마무리했다,성료했다,밝혔다,전했다",
+"본문 — 접속·전환 부사":"이날,이번,이어,또한,아울러,특히,한편,먼저,끝으로,이와 함께,이와 관련해,뿐만 아니라,앞서,이후,나아가,무엇보다,실제로,그동안,올해는,내년에는,이를 위해,이에 따라",
+"본문 — 운영 서술어":"진행된다,운영된다,펼쳐진다,마련된다,제공된다,구성된다,편성된다,배치된다,열린다,개설된다,체험할 수 있다,참여할 수 있다,관람할 수 있다,만나볼 수 있다,경험한다,배운다,익힌다,나눈다,공유한다,선보인다,지원한다,안내한다,운영할 방침이다,확대 운영된다",
+"대상 표현":"도민,시민,지역주민,관광객,방문객,참가자,수요자,영유아,아동,초등학생,청소년,학부모,가족 단위,청년,중장년,어르신,다문화가정,한부모가정,장애인,소상공인,관심 있는 누구나,사전 신청자",
+"일정·장소 표현":"오는,지난,매주,격주,매월,상·하반기,총 4회차,회차별,1일 2회,오전 10시부터,오후 2시부터 4시까지,2시간 동안,~일대에서,~앞마당에서,강의실 1에서,다목적실에서,야외무대에서,일원에서,현장에서,온라인으로",
+"신청·접수 표현":"선착순 마감,선착순 접수,사전 신청,현장 접수,온라인 접수,방문 접수,전화 접수,누리집에서,QR코드를 통해,신청서를 제출하면,접수 기간은,모집 인원은,정원 20명,학년별 20명,무료로 운영된다,참가비는 없다,재료비 일부 자부담,중복 신청 불가,선정 결과는 개별 안내,자세한 사항은 ~로 문의",
+"성과·호응 표현":"큰 호응을 얻었다,호평을 받았다,긍정적 반응을 이끌어냈다,만족도가 높게 나타났다,참여 열기가 뜨거웠다,조기 마감됐다,0명이 참여한 가운데,전년 대비 증가했다,누적 00명이 참여했다,총 9회 운영한 바 있다,3년 연속 운영 중이다,올해 3회째를 맞았다,성황리에 마무리됐다,특별한 추억을 선사했다,깊은 인상을 남겼다,자연스럽게 이어졌다,활력을 불어넣었다,기회를 제공했다,계기가 됐다,밑거름이 됐다,저변을 넓혔다,확산시켰다",
+"협업·지원 표현":"~와 협업해,~와 손잡고,~의 후원으로,~와 업무협약을 맺고,부서 간 협업을 강화해,민관 협력으로,유관기관과 연계해,지역사회와 함께,자원봉사자의 도움으로,안전 지원도 함께 이뤄졌다,보행안전지도를 실시해,안전요원을 배치해,현장 안내를 지원해,교통 편의를 제공해,편의와 안전 확보에 힘을 보탰다,운영 전반을 지원했다,재능기부로 참여했다,공동 주관으로,위탁 운영된다,국비를 확보해",
+"인용문 ① 의의·평가":"~할 수 있는 기회,~하는 뜻깊은 자리,~을 위해 마련한 행사,~로 성장할 수 있는 발판,~을 체감할 수 있는 계기,서로를 이해하는 자리,지역의 가치를 재발견하는 기회,참여자 중심으로 기획한 프로그램,생활 속에서 실천하는 출발점,세대가 함께 어울리는 장,지역상권으로 이어지는 연결고리,자연스럽게 접할 수 있는 통로,잠재력을 발견하는 무대,공동체 회복의 디딤돌,배움과 나눔이 공존하는 공간,일상에 활력을 더하는 시간,직접 제안하고 실천하는 과정,문화다양성을 이해하는 통로,지역의 미래를 함께 그리는 자리,주민 체감형 정책의 사례,작지만 의미 있는 변화,모두가 함께 누리는 혜택",
+"인용문 ② 당부·요청":"많은 관심과 참여를 바란다,적극적인 신청을 당부드린다,관심 있는 분들의 많은 참여를 부탁드린다,선착순 마감되는 만큼 서둘러 신청해 주시길 바란다,가족과 함께 참여해 보시길 권한다,일정을 확인해 미리 신청해 주시길 바란다,주변에도 널리 알려 주시길 부탁드린다,생활 속 실천에 함께해 주시길 바란다,작은 관심이 큰 변화를 만든다,시민 여러분의 협조를 부탁드린다,현장을 찾아 직접 경험해 보시길 바란다,의견을 적극적으로 제안해 주시길 바란다,불편하시더라도 양해를 부탁드린다,안전 수칙을 반드시 지켜 주시길 당부드린다,대중교통을 이용해 주시길 바란다,사전 예약 후 방문해 주시길 바란다,혼잡이 예상되니 여유 있게 방문해 주시길 바란다,질서 유지에 협조해 주시길 부탁드린다,마스크 등 개인 위생에 유의해 주시길 바란다,쓰레기는 되가져가 주시길 당부드린다,반려동물 동반은 자제해 주시길 바란다,문의사항은 담당 부서로 연락해 주시길 바란다",
+"인용문 ③ 감사·치하":"함께해 주신 모든 분들께 감사드린다,참여해 주신 시민 여러분께 깊이 감사드린다,성원에 보답하겠다,아낌없는 지원을 보내 주신 데 감사드린다,묵묵히 애써 주신 관계자분들께 고마움을 전한다,자원봉사자 여러분의 헌신에 감사드린다,유관기관의 협조 덕분에 안전하게 마칠 수 있었다,지역사회의 관심이 큰 힘이 됐다,보내 주신 격려에 힘을 얻었다,현장을 지켜 주신 분들께 감사의 말씀을 드린다,후원해 주신 기관에 감사드린다,기대에 부응하도록 노력하겠다,응원해 주신 만큼 더욱 발전시키겠다,협력해 주신 모든 분들과 성과를 나누고 싶다,참여자 한 분 한 분이 주인공이었다,함께한 모든 과정이 소중한 자산이 됐다,내년에도 변함없는 관심을 부탁드린다,보내 주신 신뢰에 책임감을 느낀다,작은 손길들이 모여 가능했다,끝까지 자리를 지켜 주셔서 감사하다,뜨거운 호응에 감사드린다,함께 만들어 주신 결과다",
+"인용문 ④ 기대·바람":"좋은 계기가 되길 바란다,뜻깊은 추억으로 남길 바란다,서로를 이해하는 시간이 되길 바란다,즐겁게 참여하길 기대한다,배움의 즐거움을 느끼길 바란다,건강하게 성장하는 밑거름이 되길 바란다,지역에 대한 애정을 키우는 기회가 되길 바란다,새로운 도전의 출발점이 되길 바란다,일상에 작은 활력이 되길 기대한다,함께 어울리는 계기가 되길 바란다,생각을 넓히는 시간이 되길 바란다,소통의 폭이 넓어지길 기대한다,자신감을 얻는 자리가 되길 바란다,오래 기억에 남길 바란다,많은 분들께 도움이 되길 기대한다,긍정적 변화로 이어지길 바란다,지속적인 관심으로 이어지길 기대한다,지역 활력으로 연결되길 바란다,보람을 느끼는 경험이 되길 바란다,서로에게 힘이 되는 시간이 되길 바란다,기대 이상의 성과로 이어지길 바란다,앞으로의 가능성을 보여 주길 기대한다",
+"인용문 ⑤ 향후계획·의지":"최선을 다하겠다,지속적으로 추진해 나가겠다,더욱 확대해 나가겠다,내실 있게 운영하겠다,다양한 프로그램을 발굴하겠다,의견을 적극 반영하겠다,체계적으로 지원하겠다,협업을 강화하겠다,촘촘하게 챙기겠다,세심하게 살피겠다,기반을 다져 나가겠다,한층 발전된 모습으로 찾아뵙겠다,더 많은 기회를 제공하겠다,참여 폭을 넓혀 나가겠다,성과를 이어 가겠다,정책에 반영해 나가겠다,읍면지역으로 확대 운영하겠다,상시 운영 체계를 갖추겠다,수요자 눈높이에 맞춰 개선하겠다,부족한 점은 보완하겠다,끝까지 책임지고 추진하겠다,내년에도 차질 없이 준비하겠다",
+"인용문 ⑥ 연결 어미":"~라며,~면서,~고 덧붙였다,~라고 말했다,~라고 강조했다,~라고 당부했다,~라고 전했다,~라고 밝혔다,~라고 설명했다,~라며 기대를 나타냈다,~라고 덧붙였다,~라며 감사의 뜻을 전했다,~라고 거듭 당부했다,~라며 협조를 요청했다,~라고 약속했다,~라며 의지를 밝혔다,~라고 평가했다,~라며 소회를 밝혔다,~라고 내다봤다,~라며 포부를 전했다",
+"붙임 표기":"프로그램 포스터,세부 운영계획,운영 일정표,회차별 커리큘럼,행사 리플릿,홍보 웹자보,참가 신청서,행사장 배치도,약도 및 주차 안내,현장 사진,사진 설명(캡션),보도용 고화질 이미지,참여기관 명단,수상자 명단,설문 결과 요약,추진 경과,연도별 운영 실적,관련 근거 법령,예산 집행 내역,문의처 안내"
+};
+
+/* 인용 구성 정의 */
+const QMODE={
+A:{name:'의의 + 향후계획',parts:['행사의 의의를 수혜자 관점에서 설명','향후 지속·발전 의지'],end:'~라며, ~라고 말했다',use:['인용문 ① 의의·평가','인용문 ⑤ 향후계획·의지']},
+B:{name:'의의 + 참여 당부·요청',parts:['프로그램의 가치·기대효과','{대상}을 향한 참여 신청 당부'],end:'~라며, ~라고 당부했다',use:['인용문 ① 의의·평가','인용문 ② 당부·요청']},
+C:{name:'성과 평가 + 감사',parts:['행사 성과에 대한 평가','참여자·협력기관에 대한 감사'],end:'~라며, ~라고 감사의 뜻을 전했다',use:['인용문 ① 의의·평가','인용문 ③ 감사·치하']},
+D:{name:'기대·바람',parts:['프로그램이 참여자에게 주는 의미','참여자를 향한 바람'],end:'~라고 말했다 / ~되길 바란다고 전했다',use:['인용문 ④ 기대·바람']},
+E:{name:'성과 + 확대 의지',parts:['그동안의 추진 성과 요약','대상·규모 확대 추진 의지'],end:'~라며, ~라고 밝혔다',use:['인용문 ① 의의·평가','인용문 ⑤ 향후계획·의지']},
+F:{name:'배경 설명 + 정책 의지',parts:['사업 추진 배경·필요성','기관의 정책 방향과 추진 의지'],end:'~라며, ~라고 강조했다',use:['인용문 ① 의의·평가','인용문 ⑤ 향후계획·의지']},
+G:{name:'의의 + 협업 강조 + 지속 추진',parts:['행사의 의의','협업기관과의 협력 성과','지속 추진 의지'],end:'~라며, ~면서, ~라고 말했다',use:['협업·지원 표현','인용문 ① 의의·평가','인용문 ⑤ 향후계획·의지']},
+H:{name:'안전·유의사항 당부',parts:['행사 취지 및 준비 사항','방문객 대상 안전·질서 협조 당부'],end:'~라며, ~라고 거듭 당부했다',use:['인용문 ② 당부·요청']}
+};
+function pickMode(){
+  const t=v('type'),m=v('qmode');
+  if(m!=='auto')return m;
+  if(t==='사후결과형') return has('coop')?'C':'C';
+  if(t==='성과종합형') return 'E';
+  if(has('apply')) return 'B';
+  if(/아동|어린이|청소년|학생|유아/.test(v('who')+v('pname'))) return 'D';
+  return 'A';
+}
+function hintQuote(){
+  const k=pickMode(), q=QMODE[k];
+  document.getElementById('qhint').innerHTML=
+    '<b>적용 구성: '+k+'. '+q.name+'</b><br>'+q.parts.map((p,i)=>(i+1)+') '+p).join(' → ')+'<br>연결어미: <code>'+q.end+'</code>';
+}
+document.getElementById('spk').onchange=e=>{
+  document.getElementById('spkC').style.display=e.target.value==='custom'?'':'none';};
+
+const sel={};
+const bank=document.getElementById('bank');
+Object.keys(BANK).forEach((k,i)=>{
+  sel[k]=new Set();
+  const d=document.createElement('details'); if(i<2)d.open=true;
+  d.dataset.k=k;
+  const words=BANK[k].split(',');
+  d.innerHTML=`<summary>${i+1}. ${k} <span style="color:#8c98a8;font-weight:400">(${words.length})</span></summary><div class="chips"></div>`;
+  const box=d.querySelector('.chips');
+  words.forEach(w=>{
+    const b=document.createElement('button');
+    b.className='chip';b.textContent=w;b.type='button';b.dataset.w=w;
+    b.onclick=()=>{if(sel[k].has(w)){sel[k].delete(w);b.classList.remove('on');}else{sel[k].add(w);b.classList.add('on');}count();};
+    box.appendChild(b);
+  });
+  bank.appendChild(d);
+});
+function count(){let n=0;Object.values(sel).forEach(s=>n+=s.size);document.getElementById('selCnt').textContent='선택 '+n+'개';}
+function clearSel(){Object.keys(sel).forEach(k=>sel[k].clear());document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'));count();}
+function autoQuoteWords(){
+  const q=QMODE[pickMode()];
+  q.use.concat(['인용문 ⑥ 연결 어미']).forEach(k=>{
+    if(!BANK[k])return;
+    const d=[...document.querySelectorAll('details')].find(x=>x.dataset.k===k);
+    if(d)d.open=true;
+    BANK[k].split(',').slice(0,6).forEach(w=>{
+      sel[k].add(w);
+      const b=d&&[...d.querySelectorAll('.chip')].find(c=>c.dataset.w===w);
+      if(b)b.classList.add('on');
+    });
+  });
+  count();gen();
+}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
+  document.getElementById('tabW').style.display=t.dataset.t=='w'?'':'none';
+  document.getElementById('tabO').style.display=t.dataset.t=='o'?'':'none';
+});
+const v=id=>document.getElementById(id).value.trim();
+const c=id=>document.getElementById(id).checked;
+const mark=b=>b?'있음■ 없음□':'있음□ 없음■';
+const has=id=>v(id)!=='';
+
+function speaker(){
+  const s=v('spk');
+  if(s==='custom')return v('spkC')||'{발언자}';
+  if(s==='mgr')return [v('mgrN'),v('mgrT')].filter(Boolean).join(' ')||'{팀장 성명 직책}';
+  if(s==='mayor')return '제주시장';
+  return [v('bossN'),v('bossT')].filter(Boolean).join(' ')||'{성명} {직책}';
+}
+
+function gen(){
+  hintQuote();
+  const t=v('type'), omit=v('missing')==='omit';
+  const past=t==='사후결과형';
+  const org=v('org'), name=v('pname');
+  const L=[];
+
+  L.push('# '+(org?org+' ':'')+'보도자료 생성 프롬프트 ('+t+')');
+  L.push('');
+  L.push('## [ROLE]');
+  L.push('너는 제주시청 공보 업무 15년 경력의 보도자료 작성 전문가다.');
+  L.push('지방자치단체 보도자료 문법(개조식 기호체계, 관공서 문어체, 육하원칙 압축)에 숙련되어 있다.');
+  L.push('');
+  L.push('## [TASK]');
+  L.push('아래 [INPUT]을 바탕으로 '+t+' 보도자료 1건을 [FORMAT]·[QUOTE]·[RULES]에 맞춰 작성하라.');
+  L.push('분량은 '+v('len')+'.');
+  L.push('');
+
+  const rows=[
+    ['담당기관/부서',v('org')],['자료제공일',v('date')],
+    ['과장',[v('bossT'),v('bossN'),v('bossP')?'☎ '+v('bossP'):''].filter(Boolean).join(' ')],
+    ['팀장',[v('mgrT'),v('mgrN'),v('mgrP')?'☎ '+v('mgrP'):''].filter(Boolean).join(' ')],
+    ['자료표기','동영상 '+(c('vid')?'있음':'없음')+' / 사진(웹하드) '+(c('pho')?'있음':'없음')+' / 후속자료 '+(c('fol')?'있음':'없음')],
+    ['유형',t],['행사(프로그램)명',v('pname')],['부제 키워드',v('kw')],
+    ['일시·기간',v('when')],['장소',v('where')],['대상',v('who')],['정원',v('cap')],
+    ['주요 프로그램',v('items').split('\n').filter(x=>x.trim()).map(x=>'▲'+x.trim()).join(' ')],
+    ['추진 배경·목적',v('goal')],['연계·협업기관',v('coop')],['성과수치',v('num')],
+    ['신청방법·접수처',v('apply')],['향후 계획',v('plan')],['붙임',v('att')],
+    ['인용 메시지',v('qmsg')]
+  ].filter(r=>r[1]);
+  if(rows.length){
+    L.push('## [INPUT]');L.push('```');
+    rows.forEach(r=>L.push(r[0].padEnd(14,' ')+': '+r[1]));
+    L.push('```');L.push('');
+  }
+
+  L.push('## [FORMAT] — 순서 변경 금지');
+  let n=1;
+  if(c('opHead')){
+    const hr=['| 제 주 시 | 자료제공일 | '+v('date')+' |','|---|---|---|'];
+    if(v('bossT')||v('bossN'))hr.push('| 보 도 자 료 | '+v('bossT')+' | '+v('bossN')+(v('bossP')?' ☎ '+v('bossP'):'')+' |');
+    if(v('mgrT')||v('mgrN'))hr.push('| 배포 즉시 보도할 수 있습니다. | '+v('mgrT')+' | '+v('mgrN')+(v('mgrP')?' ☎ '+v('mgrP'):'')+' |');
+    hr.push('| 동영상 : '+mark(c('vid'))+' | 사진(웹하드) : '+mark(c('pho'))+' | 후속자료 : '+(c('fol')?'있음':'없음')+' |');
+    L.push(n+++'. **헤더표** (아래 표 그대로 출력)');L.push('');hr.forEach(x=>L.push(x));L.push('');
+  }
+  L.push(n+++'. **주제목** (30자 내외) — `'+(org||'{기관명}')+', '+(v('kw')?v('kw')+' ':'')+(name?"'"+name+"' ":'')+(past?'성료':'운영')+'`');
+  L.push(n+++'. **부제목** (40자 내외) — '+(past?'핵심 콘텐츠 2~3개를 `·`로 묶고 기대효과로 마무리'
+      :has('apply')?'`'+(v('who')||'{대상}')+' 대상 … 참가자 모집`':'핵심 콘텐츠 나열 + 기대효과'));
+  const lead=['주체'];
+  if(has('when'))lead.push('일시');
+  if(has('where'))lead.push('장소');
+  if(has('who'))lead.push('대상');
+  if(has('goal'))lead.push('목적');
+  lead.push('행사명');
+  L.push(n+++'. **리드문 ❑** — '+lead.join('·')+'을 1문장으로 압축. 세부 프로그램은 쓰지 말 것.');
+
+  const blocks=[];
+  if(has('goal')) blocks.push(past?'행사 개요·기획 취지 및 개막 현장':'기획 취지·추진 배경');
+  if(has('items')) blocks.push('주요 프로그램 상세 (▲기호로 나열)');
+  if(has('when')||has('where')||has('cap')) blocks.push('운영 일정·장소'+(has('cap')?'·정원':''));
+  if(has('coop')) blocks.push('연계·협업기관 및 지원 사항');
+  if(has('apply')) blocks.push('신청 일시·방법·접수처 안내');
+  if(has('num')) blocks.push('참여 성과 및 호응');
+  if(!blocks.length) blocks.push('행사 개요 및 주요 내용');
+  const want=v('bodyn');
+  let body=blocks;
+  if(want!=='auto'){
+    const k=+want;body=blocks.slice(0,k);
+    if(body.length<k&&!omit){while(body.length<k)body.push('{확인 필요 — 추가 내용}');}
+  }
+  L.push(n+++'. **본문 ❍ '+body.length+'개** (각 2~4행)');
+  body.forEach((b,i)=>L.push('   - ❍'+('①②③④⑤'[i]||'•')+' '+b));
+  if(want!=='auto'&&blocks.length<+want&&omit)L.push('   ※ 위 '+body.length+'개 외에 임의 문단을 추가하지 말 것.');
+
+  const qk=pickMode(), Q=QMODE[qk];
+  L.push(n+++'. **마무리 인용 ❑** — [QUOTE] 지침에 따라 작성');
+  if(has('att')) L.push(n+++'. **붙임** — `○ '+v('att')+'`');
+  L.push('');
+
+  /* ===== QUOTE 블록 ===== */
+  L.push('## [QUOTE] — 마무리 인용문 작성 지침');
+  L.push('- **발언자**: '+speaker());
+  L.push('- **구성 유형**: '+qk+'. '+Q.name+' ('+v('qlen')+')');
+  L.push('- **문장 구성 순서**');
+  Q.parts.forEach((p,i)=>L.push('  '+(i+1)+') '+p.replace('{대상}',v('qto')||v('who')||'대상')));
+  L.push('- **연결 어미 패턴**: `'+Q.end+'`');
+  if(v('qto'))L.push('- **당부·요청 대상**: '+v('qto')+' — 해당 대상을 직접 지칭하며 정중한 청유형으로 작성');
+  if(has('qmsg'))L.push('- **반드시 포함할 메시지**: '+v('qmsg'));
+  if(has('plan'))L.push('- **향후계획 근거**: '+v('plan')+' (이 범위를 벗어난 약속 금지)');
+  L.push('- **본문 연계 원칙**');
+  L.push('  · 인용문은 본문에서 가장 비중 있게 다룬 내용을 받아 마무리할 것. 본문에 없는 새로운 사업·수치·기관을 인용문에서 처음 꺼내지 말 것.');
+  if(has('apply'))L.push('  · 본문 ❍에 신청 안내가 있으므로, 인용문은 신청 방법을 반복하지 말고 **참여 독려**에 집중할 것.');
+  if(has('num'))L.push('  · 본문에 성과수치가 있으므로, 인용문에서는 수치를 다시 쓰지 말고 **의미 부여**로 전환할 것.');
+  if(has('coop'))L.push('  · 협업기관이 있으므로 협력의 가치를 한 문장에 담되, 기관명 나열은 피할 것.');
+  if(c('qNoNum'))L.push('  · 인용문 내 숫자·날짜·금액 표기 금지 (본문과 중복 방지).');
+  if(c('qPol'))L.push('  · 기관의 정책 기조·방향성을 한 구절로 녹일 것 (슬로건 나열식 금지).');
+  L.push('- **금지 사항**: 1인칭 과시("최고의", "역대급"), 추상적 미사여구만 나열, 본문 문장 그대로 복사, 공약성 단정("반드시 ~하겠다"는 근거 있을 때만).');
+  L.push('- **분량**: 전체 2~4행, 인용부호 안 각 문장은 40~60자.');
+  L.push('');
+
+  L.push('## [RULES]');
+  let r=1;
+  L.push(r+++'. **기호 체계**: 1단계 `❑`, 2단계 `❍`, 나열 `▲`, 각주 `*`. 그 외 기호 금지.');
+  L.push(r+++'. **시제 통일**: '+(past?'`~했다 / ~됐다 / ~진행됐다` (과거형)':t==='성과종합형'?'`~해 왔다`(경과) + `~추진할 계획이다`(계획)를 문단별로 분리':'`~한다 / ~된다 / ~접수한다` (현재·미래형, `~했다` 금지)')+'. 혼용 금지. 단, 인용문 내부는 발언 시점 기준 자연스러운 시제를 허용한다.');
+  L.push(r+++'. **문체**: 평서형 종결, 관공서 문어체. 감탄사·이모지·과장 금지.');
+  L.push(r+++'. **인용부호**: 행사명 `\'...\'`, 발언 `"..."`. 발언 인용은 `"A"라며, "B"라고 말했다` 형식 준수.');
+  L.push(r+++'. **숫자 표기**: 날짜 `10월 7일(수)`, 시간 `오후 2시부터 4시까지`, 인원 `1,300여 명`.');
+  L.push(r+++'. **접속 부사** `이날/이어/또한/아울러/특히/한편`을 중복 없이 배분.');
+  L.push(r+++(omit
+    ?'. **미입력 항목 처리**: [INPUT]에 없는 항목은 문장·문단 자체를 생략하라. 빈칸·`{ }`·"미정"·"추후 안내" 흔적을 남기지 말 것.'
+    :'. **미입력 항목 처리**: [INPUT]에 없는 내용은 `{확인 필요}`로 표기할 것.'));
+  L.push(r+++'. **사실 창작 금지**: 주어지지 않은 수치·기관명·발언을 지어내지 말 것.');
+  L.push(r+++'. 같은 서술어·부사를 문서 내에서 2회 이상 반복하지 말 것.');
+
+  let tot=0;Object.values(sel).forEach(s=>tot+=s.size);
+  if(c('opWord')&&tot){
+    L.push('');L.push('## [표현 사전] — 아래 어휘를 우선 활용할 것');
+    Object.keys(sel).forEach(k=>{if(sel[k].size)L.push('- **'+k+'**: '+[...sel[k]].join(' / '));});
+  }
+
+  L.push('');
+  L.push('## [OUTPUT]');
+  L.push('설명·주석·머리말 없이 '+(c('opHead')?'헤더표':'주제목')+'부터 보도자료 본문만 출력.');
+  if(omit)L.push('해당 사항이 없는 항목은 아예 출력하지 않는다.');
+
+  if(c('opSelf')){
+    const ck=['리드문이 육하원칙 1문장인가','시제가 전 문단 일관되는가','❍ 항목이 '+body.length+'개인가','분량이 '+v('len')+' 범위인가'];
+    if(org&&name)ck.unshift('주제목에 기관명과 행사명이 모두 포함되었는가');
+    if(has('items'))ck.push('주요 프로그램이 ▲기호로 나열됐는가');
+    if(has('apply'))ck.push('신청 일시·방법·접수처가 명시됐는가');
+    ck.push('인용문이 '+qk+'형('+Q.name+') 구성 순서를 따르는가');
+    ck.push('인용문이 본문 핵심 내용을 받아 마무리하는가 (새 정보 등장 없음)');
+    if(v('qto'))ck.push(v('qto')+'을(를) 향한 당부가 정중한 청유형으로 들어갔는가');
+    if(c('qNoNum'))ck.push('인용문에 본문 수치가 중복 기재되지 않았는가');
+    if(has('qmsg'))ck.push('지정한 인용 메시지가 반영됐는가');
+    ck.push(omit?'입력에 없는 항목이 억지로 채워지지 않았는가':'미입력 항목이 {확인 필요}로 표기됐는가');
+    L.push('');L.push('## [SELF-CHECK] — 출력 직전 내부 검증');
+    ck.forEach(x=>L.push('- [ ] '+x));
+  }
+
+  const txt=L.join('\n');
+  document.getElementById('out').textContent=txt;
+  document.getElementById('cnt').textContent='생성 '+txt.length.toLocaleString()+'자 · 입력 '+rows.length+'개 · 본문 ❍ '+body.length+'개 · 인용 '+qk+'형 · 표현 '+tot+'개';
+  const miss=[['장소','where'],['대상','who'],['정원','cap'],['주요 프로그램','items'],['추진 목적','goal'],['협업기관','coop'],['성과수치','num'],['신청방법','apply'],['향후 계획','plan'],['붙임','att']].filter(m=>!has(m[1])).map(m=>m[0]);
+  const sb=document.getElementById('skipBox');
+  if(omit&&miss.length){sb.style.display='';sb.textContent='미입력으로 생략된 항목: '+miss.join(', ');}else sb.style.display='none';
+  document.querySelector('[data-t="o"]').click();
+  return txt;
+}
+function copyP(){const t=document.getElementById('out').textContent||gen();
+  navigator.clipboard.writeText(t).then(()=>alert('프롬프트를 복사했습니다.'),()=>alert('복사 실패 — 직접 드래그해 복사하세요.'));}
+function dl(ext){const t=document.getElementById('out').textContent||gen();
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([t],{type:'text/plain;charset=utf-8'}));
+  a.download=(v('pname')||'보도자료')+'_프롬프트.'+ext;a.click();}
+function sample(){
+  const s={org:'탐라도서관 열람팀',date:'2026. 10. 16.(금)',bossT:'탐라도서관장',bossN:'문정희',bossP:'728-8360',
+  mgrT:'열람팀장',mgrN:'오경훈',mgrP:'728-8371',pname:'같이 놀자~ 지구촌 친구들!',kw:'세계 전통놀이 체험',
+  when:'2026. 11. 7.(토) ~ 11. 29.(일) 14:00~16:00',where:'탐라도서관 강의실 1',who:'다문화 및 지역 아동',
+  cap:'학년별 20명(총 40명)',items:'술래잡기\n눈 가리고 잡기\n땅따먹기 놀이\n전통 리듬 놀이',
+  goal:'세계 각국 전통놀이로 다양한 문화를 이해하고, 놀이를 매개로 소통하며 상호 존중 태도 함양',
+  coop:'문화체육관광부',num:'',apply:'2026. 10. 17.(토) 10:00부터 제주특별자치도 공공도서관 누리집(lib.jeju.go.kr) 선착순',
+  plan:'문화다양성 기반 아동 프로그램 지속 운영',att:'프로그램 포스터 1부',
+  qmsg:'선착순 마감이 예상되니 관심 있는 가정의 조기 신청을 바란다'};
+  Object.keys(s).forEach(k=>{const e=document.getElementById(k);if(e)e.value=s[k];});
+  document.getElementById('qto').value='학부모';
+  gen();
+}
+function reset(){document.querySelectorAll('input[type=text],input:not([type]),textarea').forEach(e=>e.value='');clearSel();
+  document.getElementById('out').textContent='';document.getElementById('cnt').textContent='';
+  document.getElementById('skipBox').style.display='none';hintQuote();}
+gen();
+</script>
+</body>
+</html>
